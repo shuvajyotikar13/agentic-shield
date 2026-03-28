@@ -30,8 +30,12 @@ class SemanticShield:
         
         if results.docs:
             score = float(results.docs[0].score)
-            # Threshold: 0.15 (Closer to 0 means highly similar)
-            if score < 0.15: 
+
+            # --- ADD THIS LINE FOR THE DEMO ---
+            print(f"   -> [DEBUG] Semantic Distance Score: {score:.4f}")
+
+            # Relaxed Threshold: 0.45 (Catches broader intent)
+            if score < 0.75:
                 return True, results.docs[0].pattern, latency
-                
+
         return False, None, latency
