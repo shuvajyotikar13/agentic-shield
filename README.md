@@ -31,3 +31,48 @@ agentic-shield-demo/
 │   ├── agent_shield.py     # Core Redis vector search and semantic threshold logic
 │   ├── consumer.py         # The Agent: Consumes Kafka topics and triggers the shield
 │   └── producer.py         # The Attacker: Simulates 100 realistic SOC events & injections
+```
+## 🚀 Quick Start (Demo)
+This demo uses docker-compose to spin up a local Kafka broker and Redis Stack (required for RediSearch/Vector Search).
+
+1. **Start the Infrastructure**
+   
+```bash
+docker-compose up -d
+```
+2.  **Install Dependencies**
+(It is recommended to use a virtual environment)
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+3.  **Seed the Redis Vector Database**
+
+Creates the all-MiniLM-L6-v2 index and loads a diverse cluster of baseline prompt injection attacks into memory to train the firewall.
+
+```bash
+python src/setup_redis.py
+```
+5. **Launch the Threat Simulation (Producer)**
+In a second terminal window, run the threat simulation engine. This script fires 100 realistic events into Kafka, mixing benign SOC queries, random IT noise, and mutated zero-day prompt injections.
+
+```bash
+python src/producer.py
+```
+
+## 📊 What to Expect in the Logs
+Watch the logs in your Consumer terminal. You will see:
+
+Benign Traffic (The Slow Path): Standard SOC queries will register a high semantic distance (e.g., 0.88+), safely passing the firewall to be processed by the Agent.
+
+Mutated Attacks (The Fast Path): When a zero-day injection hits the stream, Redis will mathematically recognize the intent (scoring < 0.65 distance) and drop the payload in milliseconds, flashing a red [BLOCKED] alert.
+
+## 🛠️ Tech Stack
+Streaming: Apache Kafka / Confluent (confluent-kafka)
+
+Context & Memory: Redis Stack (RediSearch)
+
+Embeddings: sentence-transformers (all-MiniLM-L6-v2)
+
+Compute: Python (Designed for Serverless deployments like Google Cloud Run)
